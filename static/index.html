@@ -127,11 +127,16 @@ tr:last-child td{border-bottom:none}
 .checkbox-row{display:flex;align-items:center;gap:8px}
 .checkbox-row input{width:auto}
 
-.admin-shell{flex-direction:column}
+@media (max-width:920px){
+  .grid-3,.grid-2{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .admin-shell{flex-direction:column}
   .admin-sidebar{width:100%;display:flex;flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--color-border);padding:10px;gap:6px}
   .admin-sidebar a{white-space:nowrap;margin-bottom:0;flex-shrink:0}
 }
-@media (max-width:760px){
+@media (max-width:900px){
   .nav-links{display:none}
   .burger{display:flex}
   .nav-links.open{display:flex;flex-direction:column;position:absolute;top:66px;left:0;right:0;background:var(--color-surface);padding:12px;border-bottom:1px solid var(--color-border);z-index:99}
@@ -139,13 +144,21 @@ tr:last-child td{border-bottom:none}
   .hero-content{margin:0 auto}
   .hero-actions{justify-content:center}
 }
+@media (max-width:680px){
+  .table-wrap table,.table-wrap thead,.table-wrap tbody,.table-wrap th,.table-wrap td,.table-wrap tr{display:block}
+  .table-wrap thead{display:none}
+  .table-wrap tr{border-bottom:2px solid var(--color-border);padding:10px 0}
+  .table-wrap tr:last-child{border-bottom:none}
+  .table-wrap td{border:none;padding:6px 16px;white-space:normal}
+  .table-wrap td::before{content:attr(data-label);font-weight:700;display:block;font-size:.7rem;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:2px}
+  .table-wrap td:empty::before{content:none}
+}
 </style>
 </head>
 <body>
-
-<header class="site-header">
+  <header class="site-header">
   <nav class="nav container">
-    <button class="brand" data-route="#/"><span class="brand-icon">✚</span><span data-i18n="site_name"></span></button>
+    <button class="brand" data-route="#/"><span class="brand-icon" id="brand-icon-slot">✚</span><span data-i18n="site_name"></span></button>
     <ul class="nav-links" id="nav-links">
       <li><a data-route="#/" data-i18n="nav_home"></a></li>
       <li><a data-route="#/consultation" data-i18n="nav_consultation"></a></li>
@@ -173,8 +186,8 @@ tr:last-child td{border-bottom:none}
   <div class="container">
     <div class="footer-grid">
       <div><h4 data-i18n="site_name"></h4><p data-i18n="hero_subtitle"></p></div>
-      <div><h4 data-i18n="footer_address"></h4><p>12 Rue Capois, Port-au-Prince, Haïti<br>+509 3456 7890</p></div>
-      <div><h4 data-i18n="footer_hours"></h4><p data-i18n="footer_hours_value"></p></div>
+      <div><h4 data-i18n="footer_address"></h4><p id="footer-address-value">12 Rue Capois, Port-au-Prince, Haïti<br>+509 3456 7890</p><p id="footer-doctor-value" style="margin-top:8px"></p></div>
+      <div><h4 data-i18n="footer_hours"></h4><p id="footer-hours-value">Lun - Sam : 7h00 - 19h00 | Urgences 24/7</p></div>
     </div>
     <div class="footer-bottom">&copy; 2026 <span data-i18n="site_name"></span> — <span data-i18n="footer_rights"></span></div>
   </div>
@@ -204,7 +217,9 @@ const TRANSLATIONS = {
   admin_login_title:"Connexion Espace Admin",admin_username:"Nom d'utilisateur",admin_password:"Mot de passe",admin_login_btn:"Se connecter",admin_login_error:"Identifiants incorrects.",admin_login_locked:"Trop de tentatives. Réessayez dans 15 minutes.",
   admin_dashboard:"Tableau de bord",admin_services:"Services",admin_appointments:"Rendez-vous",admin_messages:"Messages",admin_logout:"Déconnexion",
   admin_add_service:"Ajouter un service",admin_edit_service:"Modifier le service",admin_delete:"Supprimer",admin_edit:"Modifier",admin_save:"Enregistrer",admin_cancel:"Annuler",
-  admin_confirm_delete:"Confirmer la suppression ?",admin_image:"Image du service",admin_active:"Actif",admin_status:"Statut",admin_date:"Date",admin_actions:"Actions",required_field:"Champ obligatoire"},
+  admin_confirm_delete:"Confirmer la suppression ?",admin_image:"Image du service",admin_active:"Actif",admin_status:"Statut",admin_date:"Date",admin_actions:"Actions",required_field:"Champ obligatoire",
+  admin_settings:"Paramètres",doctor_label:"Médecin responsable",settings_general:"Informations générales",settings_phone:"Téléphone",settings_address:"Adresse",settings_doctor:"Nom du médecin responsable",settings_hours:"Heures de rendez-vous",settings_logo:"Logo",settings_hero:"Photo de fond (accueil)",settings_save:"Enregistrer les paramètres",settings_saved:"Paramètres enregistrés.",
+  settings_account:"Compte administrateur",settings_current_password:"Mot de passe actuel",settings_new_username:"Nouveau nom d'utilisateur (optionnel)",settings_new_password:"Nouveau mot de passe (optionnel)",settings_update_account:"Mettre à jour le compte",settings_account_saved:"Compte mis à jour. Reconnectez-vous.",settings_wrong_password:"Mot de passe actuel incorrect."},
 
   en:{site_name:"Hope Hospital",nav_home:"Home",nav_consultation:"Consultations",nav_appointment:"Appointment",nav_contact:"Contact",nav_admin:"Admin Area",
   hero_title:"Your health, our priority",hero_subtitle:"Modern, human and accessible care, 24/7.",hero_cta:"Book an appointment",hero_cta2:"See our consultations",
@@ -220,7 +235,9 @@ const TRANSLATIONS = {
   admin_login_title:"Admin Login",admin_username:"Username",admin_password:"Password",admin_login_btn:"Log in",admin_login_error:"Invalid credentials.",admin_login_locked:"Too many attempts. Try again in 15 minutes.",
   admin_dashboard:"Dashboard",admin_services:"Services",admin_appointments:"Appointments",admin_messages:"Messages",admin_logout:"Log out",
   admin_add_service:"Add a service",admin_edit_service:"Edit service",admin_delete:"Delete",admin_edit:"Edit",admin_save:"Save",admin_cancel:"Cancel",
-  admin_confirm_delete:"Confirm deletion?",admin_image:"Service image",admin_active:"Active",admin_status:"Status",admin_date:"Date",admin_actions:"Actions",required_field:"Required field"},
+  admin_confirm_delete:"Confirm deletion?",admin_image:"Service image",admin_active:"Active",admin_status:"Status",admin_date:"Date",admin_actions:"Actions",required_field:"Required field",
+  admin_settings:"Settings",doctor_label:"Attending physician",settings_general:"General information",settings_phone:"Phone",settings_address:"Address",settings_doctor:"Attending physician's name",settings_hours:"Appointment hours",settings_logo:"Logo",settings_hero:"Background photo (home)",settings_save:"Save settings",settings_saved:"Settings saved.",
+  settings_account:"Admin account",settings_current_password:"Current password",settings_new_username:"New username (optional)",settings_new_password:"New password (optional)",settings_update_account:"Update account",settings_account_saved:"Account updated. Please log in again.",settings_wrong_password:"Current password is incorrect."},
 
   ht:{site_name:"Lopital Espwa",nav_home:"Akèy",nav_consultation:"Konsiltasyon",nav_appointment:"Randevou",nav_contact:"Kontak",nav_admin:"Espas Admin",
   hero_title:"Sante ou, priyorite nou",hero_subtitle:"Swen modèn, imen e aksesib, 24 sou 24, 7 sou 7.",hero_cta:"Pran yon randevou",hero_cta2:"Gade konsiltasyon nou yo",
@@ -236,10 +253,35 @@ const TRANSLATIONS = {
   admin_login_title:"Koneksyon Espas Admin",admin_username:"Non itilizatè",admin_password:"Modpas",admin_login_btn:"Konekte",admin_login_error:"Enfòmasyon yo pa kòrèk.",admin_login_locked:"Twòp tantativ. Eseye ankò nan 15 minit.",
   admin_dashboard:"Tablo bò",admin_services:"Sèvis",admin_appointments:"Randevou",admin_messages:"Mesaj",admin_logout:"Dekonekte",
   admin_add_service:"Ajoute yon sèvis",admin_edit_service:"Modifye sèvis la",admin_delete:"Efase",admin_edit:"Modifye",admin_save:"Anrejistre",admin_cancel:"Anile",
-  admin_confirm_delete:"Konfime efase a?",admin_image:"Imaj sèvis la",admin_active:"Aktif",admin_status:"Estati",admin_date:"Dat",admin_actions:"Aksyon",required_field:"Chan obligatwa"}
+  admin_confirm_delete:"Konfime efase a?",admin_image:"Imaj sèvis la",admin_active:"Aktif",admin_status:"Estati",admin_date:"Dat",admin_actions:"Aksyon",required_field:"Chan obligatwa",
+  admin_settings:"Paramèt",doctor_label:"Doktè responsab",settings_general:"Enfòmasyon jeneral",settings_phone:"Telefòn",settings_address:"Adrès",settings_doctor:"Non doktè responsab la",settings_hours:"Lè randevou",settings_logo:"Logo",settings_hero:"Foto background (akèy)",settings_save:"Anrejistre paramèt yo",settings_saved:"Paramèt yo anrejistre.",
+  settings_account:"Kont administratè",settings_current_password:"Modpas aktyèl",settings_new_username:"Nouvo non itilizatè (opsyonèl)",settings_new_password:"Nouvo modpas (opsyonèl)",settings_update_account:"Mete kont la ajou",settings_account_saved:"Kont mete ajou. Konekte ankò.",settings_wrong_password:"Modpas aktyèl la pa kòrèk."}
 };
 
-const state = { lang: localStorage.getItem("hopital-lang") || "fr", authenticated:false, username:null };
+const state = { lang: localStorage.getItem("hopital-lang") || "fr", authenticated:false, username:null,
+  settings: { phone:"", address:"", doctor_name:"", appointment_hours:"", logo_image:"", hero_image:"" } };
+
+async function loadSettings(){
+  try{
+    const s = await api("/api/settings");
+    state.settings = s;
+  }catch(e){}
+  applySettingsToChrome();
+}
+
+function applySettingsToChrome(){
+  const s = state.settings;
+  const logoSlot = document.getElementById("brand-icon-slot");
+  if(logoSlot){
+    logoSlot.innerHTML = s.logo_image ? `<img src="${s.logo_image}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">` : "✚";
+  }
+  const addr = document.getElementById("footer-address-value");
+  if(addr) addr.innerHTML = `${s.address || ""}${s.address && s.phone ? "<br>" : ""}${s.phone || ""}`;
+  const doctor = document.getElementById("footer-doctor-value");
+  if(doctor) doctor.textContent = s.doctor_name ? `${t('doctor_label')} : ${s.doctor_name}` : "";
+  const hours = document.getElementById("footer-hours-value");
+  if(hours) hours.textContent = s.appointment_hours || "";
+}
 function t(key){ return (TRANSLATIONS[state.lang] && TRANSLATIONS[state.lang][key]) || key; }
 
 async function api(path, opts={}){
@@ -317,8 +359,11 @@ function serviceCard(s, withMeta){
 async function pageHome(){
   let services = [];
   try{ services = (await api("/api/services")).slice(0,3); }catch(e){}
+  const heroStyle = state.settings.hero_image
+    ? ` style="background:linear-gradient(120deg,rgba(10,40,45,.82),rgba(10,60,66,.55)),url('${state.settings.hero_image}') center/cover no-repeat fixed"`
+    : ``;
   return `
-  <section class="hero"><div class="container"><div class="hero-content">
+  <section class="hero"${heroStyle}><div class="container"><div class="hero-content">
     <h1>${t('hero_title')}</h1><p>${t('hero_subtitle')}</p>
     <div class="hero-actions">
       <a href="#/rendez-vous" class="btn btn-primary">${t('hero_cta')}</a>
@@ -411,9 +456,9 @@ function pageContact(){
       </form>
     </div>
     <div class="grid-3" style="margin-top:50px">
-      <div class="card"><div class="card-body"><h3>📍 ${t('footer_address')}</h3><p>12 Rue Capois, Port-au-Prince, Haïti</p></div></div>
-      <div class="card"><div class="card-body"><h3>📞 ${t('form_phone')}</h3><p>+509 3456 7890</p></div></div>
-      <div class="card"><div class="card-body"><h3>🕒 ${t('footer_hours')}</h3><p>${t('footer_hours_value')}</p></div></div>
+      <div class="card"><div class="card-body"><h3>📍 ${t('footer_address')}</h3><p>${state.settings.address}</p></div></div>
+      <div class="card"><div class="card-body"><h3>📞 ${t('form_phone')}</h3><p>${state.settings.phone}</p></div></div>
+      <div class="card"><div class="card-body"><h3>🕒 ${t('footer_hours')}</h3><p>${state.settings.appointment_hours}</p></div></div>
     </div>
   </div></section>`;
 }
@@ -503,6 +548,7 @@ async function renderAdmin(hash){
   }
   else if(sub === "#/espace-78eea76987/appointments") await loadAdminAppointments();
   else if(sub === "#/espace-78eea76987/messages") await loadAdminMessages();
+  else if(sub === "#/espace-78eea76987/settings") await loadAdminSettings();
   else await loadAdminDashboard();
 }
 
@@ -525,6 +571,7 @@ function adminShell(activeSub){
       <a data-route="#/espace-78eea76987/services" class="${activeSub.includes('services')?'active':''}">🩺 ${t('admin_services')}</a>
       <a data-route="#/espace-78eea76987/appointments" class="${activeSub.includes('appointments')?'active':''}">📅 ${t('admin_appointments')}</a>
       <a data-route="#/espace-78eea76987/messages" class="${activeSub.includes('messages')?'active':''}">✉️ ${t('admin_messages')}</a>
+      <a data-route="#/espace-78eea76987/settings" class="${activeSub.includes('settings')?'active':''}">⚙️ ${t('admin_settings')}</a>
       <a id="admin-logout-link">🚪 ${t('admin_logout')}</a>
     </aside>
     <div class="admin-main" id="admin-main"><p>...</p></div>
@@ -570,9 +617,9 @@ async function loadAdminServices(){
     </tr></thead><tbody>
       ${services.map(s=>`<tr>
         <td>${s.image_path?`<img class="thumb" src="${s.image_path}">`:`<div class="thumb" style="display:flex;align-items:center;justify-content:center">✚</div>`}</td>
-        <td>${s.name_fr}</td><td>${s.duration_minutes} ${t('minutes')}</td><td>${s.price_htg} HTG</td>
-        <td>${s.is_active?`<span class="badge badge-ok">${t('admin_active')}</span>`:`<span class="badge badge-cancel">—</span>`}</td>
-        <td class="actions-row">
+        <td data-label="${t('form_fullname')}">${s.name_fr}</td><td data-label="${t('duration')}">${s.duration_minutes} ${t('minutes')}</td><td data-label="${t('price')}">${s.price_htg} HTG</td>
+        <td data-label="${t('admin_active')}">${s.is_active?`<span class="badge badge-ok">${t('admin_active')}</span>`:`<span class="badge badge-cancel">—</span>`}</td>
+        <td class="actions-row" data-label="${t('admin_actions')}">
           <button class="btn btn-secondary btn-sm edit-service-btn" data-id="${s.id}">${t('admin_edit')}</button>
           <button class="btn btn-danger btn-sm delete-service-btn" data-id="${s.id}">${t('admin_delete')}</button>
         </td>
@@ -622,7 +669,6 @@ async function loadAdminServiceForm(id){
         </div>
       </form>
     </div>`;
-
   document.getElementById("cancel-service-btn").addEventListener("click", ()=>{ location.hash="#/espace-78eea76987/services"; router(); });
   document.getElementById("image-input").addEventListener("change", e=>{
     const file = e.target.files[0]; if(!file) return;
@@ -656,14 +702,14 @@ async function loadAdminAppointments(){
       <th>${t('form_fullname')}</th><th>${t('form_phone')}</th><th>${t('form_service')}</th><th>${t('admin_date')}</th><th>${t('admin_status')}</th><th>${t('admin_actions')}</th>
     </tr></thead><tbody>
       ${appts.map(a=>`<tr>
-        <td>${escapeHtml(a.full_name)}</td><td>${escapeHtml(a.phone)}</td><td>${a.service_name?escapeHtml(a.service_name):'—'}</td>
-        <td>${a.appointment_date} ${a.appointment_time}</td>
-        <td><select data-id="${a.id}" class="status-select">
+        <td data-label="${t('form_fullname')}">${escapeHtml(a.full_name)}</td><td data-label="${t('form_phone')}">${escapeHtml(a.phone)}</td><td data-label="${t('form_service')}">${a.service_name?escapeHtml(a.service_name):'—'}</td>
+        <td data-label="${t('admin_date')}">${a.appointment_date} ${a.appointment_time}</td>
+        <td data-label="${t('admin_status')}"><select data-id="${a.id}" class="status-select">
           <option value="en_attente" ${a.status==='en_attente'?'selected':''}>En attente</option>
           <option value="confirme" ${a.status==='confirme'?'selected':''}>Confirmé</option>
           <option value="annule" ${a.status==='annule'?'selected':''}>Annulé</option>
         </select></td>
-        <td><button class="btn btn-danger btn-sm delete-appt-btn" data-id="${a.id}">${t('admin_delete')}</button></td>
+        <td data-label="${t('admin_actions')}"><button class="btn btn-danger btn-sm delete-appt-btn" data-id="${a.id}">${t('admin_delete')}</button></td>
       </tr>`).join("")}
     </tbody></table></div>`;
 
@@ -685,9 +731,9 @@ async function loadAdminMessages(){
       <th>${t('form_fullname')}</th><th>${t('form_email')}</th><th>${t('form_subject')}</th><th>${t('form_message_required')}</th><th>${t('admin_date')}</th><th>${t('admin_actions')}</th>
     </tr></thead><tbody>
       ${messages.map(m=>`<tr>
-        <td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.email)}</td><td>${m.subject?escapeHtml(m.subject):'—'}</td>
-        <td style="max-width:280px;white-space:normal">${escapeHtml(m.message)}</td><td>${m.created_at.slice(0,16)}</td>
-        <td><button class="btn btn-danger btn-sm delete-msg-btn" data-id="${m.id}">${t('admin_delete')}</button></td>
+        <td data-label="${t('form_fullname')}">${escapeHtml(m.name)}</td><td data-label="${t('form_email')}">${escapeHtml(m.email)}</td><td data-label="${t('form_subject')}">${m.subject?escapeHtml(m.subject):'—'}</td>
+        <td data-label="${t('form_message_required')}" style="max-width:280px;white-space:normal">${escapeHtml(m.message)}</td><td data-label="${t('admin_date')}">${m.created_at.slice(0,16)}</td>
+        <td data-label="${t('admin_actions')}"><button class="btn btn-danger btn-sm delete-msg-btn" data-id="${m.id}">${t('admin_delete')}</button></td>
       </tr>`).join("")}
     </tbody></table></div>`;
 
@@ -698,10 +744,97 @@ async function loadAdminMessages(){
   }));
 }
 
+async function loadAdminSettings(){
+  const s = state.settings;
+  document.getElementById("admin-main").innerHTML = `
+    <div class="admin-topbar"><h1 style="margin:0">${t('admin_settings')}</h1></div>
+
+    <div class="form-card" style="max-width:820px;margin-bottom:26px">
+      <h2 style="margin-top:0">${t('settings_general')}</h2>
+      <div id="settings-alert"></div>
+      <form id="settings-form">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>${t('settings_logo')}</label>
+            <input type="file" id="logo-input" name="logo_image" accept="image/*">
+            <img id="logo-preview" class="thumb" style="width:80px;height:80px;margin-top:10px;${s.logo_image?'':'display:none'}" src="${s.logo_image||''}">
+          </div>
+          <div class="form-group full">
+            <label>${t('settings_hero')}</label>
+            <input type="file" id="hero-input" name="hero_image" accept="image/*">
+            <img id="hero-preview" style="width:100%;max-width:400px;border-radius:10px;margin-top:10px;${s.hero_image?'':'display:none'}" src="${s.hero_image||''}">
+          </div>
+          <div class="form-group"><label>${t('settings_phone')}</label><input type="text" name="phone" value="${escapeHtml(s.phone)}"></div>
+          <div class="form-group"><label>${t('settings_doctor')}</label><input type="text" name="doctor_name" value="${escapeHtml(s.doctor_name)}"></div>
+          <div class="form-group full"><label>${t('settings_address')}</label><input type="text" name="address" value="${escapeHtml(s.address)}"></div>
+          <div class="form-group full"><label>${t('settings_hours')}</label><input type="text" name="appointment_hours" value="${escapeHtml(s.appointment_hours)}"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">${t('settings_save')}</button>
+      </form>
+    </div>
+
+    <div class="form-card" style="max-width:820px">
+      <h2 style="margin-top:0">${t('settings_account')}</h2>
+      <div id="account-alert"></div>
+      <form id="account-form">
+        <div class="form-grid">
+          <div class="form-group full"><label>${t('settings_current_password')} *</label><input type="password" name="current_password" required></div>
+          <div class="form-group"><label>${t('settings_new_username')}</label><input type="text" name="new_username"></div>
+          <div class="form-group"><label>${t('settings_new_password')}</label><input type="password" name="new_password"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">${t('settings_update_account')}</button>
+      </form>
+    </div>`;
+
+  document.getElementById("logo-input").addEventListener("change", e=>{
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{ const p=document.getElementById("logo-preview"); p.src=ev.target.result; p.style.display="block"; };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById("hero-input").addEventListener("change", e=>{
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{ const p=document.getElementById("hero-preview"); p.src=ev.target.result; p.style.display="block"; };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById("settings-form").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const alertBox = document.getElementById("settings-alert");
+    try{
+      const updated = await api("/api/admin/settings", {method:"PUT", body:fd});
+      state.settings = updated;
+      applySettingsToChrome();
+      alertBox.innerHTML = `<div class="alert alert-success">${t('settings_saved')}</div>`;
+    }catch(err){
+      alertBox.innerHTML = `<div class="alert alert-error">${t('required_field')}</div>`;
+    }
+  });
+
+  document.getElementById("account-form").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const payload = Object.fromEntries(fd.entries());
+    const alertBox = document.getElementById("account-alert");
+    try{
+      await api("/api/admin/account", {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+      alertBox.innerHTML = `<div class="alert alert-success">${t('settings_account_saved')}</div>`;
+      await api("/api/admin/logout", {method:"POST"});
+      setTimeout(()=>{ location.hash = "#/espace-78eea76987"; router(); }, 1500);
+    }catch(err){
+      const msg = err.status === 401 ? t('settings_wrong_password') : t('required_field');
+      alertBox.innerHTML = `<div class="alert alert-error">${msg}</div>`;
+    }
+  });
+}
+
 /* ---------- Initialisation globale ---------- */
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded", async ()=>{
   initTheme();
   applyStaticI18n();
+  await loadSettings();
 
   document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
   document.getElementById("burger").addEventListener("click", ()=>document.getElementById("nav-links").classList.toggle("open"));
@@ -709,6 +842,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     state.lang = e.target.value;
     localStorage.setItem("hopital-lang", state.lang);
     applyStaticI18n();
+    applySettingsToChrome();
     router();
   });
   document.querySelectorAll("[data-route]").forEach(el=>{
@@ -721,3 +855,4 @@ document.addEventListener("DOMContentLoaded", ()=>{
 </script>
 </body>
 </html>
+  
