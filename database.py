@@ -77,6 +77,26 @@ def init_db():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    """)
+
+    conn.commit()
+
+    # Valeurs par défaut des paramètres modifiables (uniquement si absentes)
+    default_settings = {
+        "phone": "+509 3456 7890",
+        "address": "12 Rue Capois, Port-au-Prince, Haïti",
+        "doctor_name": "",
+        "appointment_hours": "Lun - Sam : 7h00 - 19h00 | Urgences 24/7",
+        "logo_image": "",
+        "hero_image": "",
+    }
+    for key, value in default_settings.items():
+        cur.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (key, value))
     conn.commit()
 
     cur.execute("SELECT COUNT(*) AS c FROM services")
@@ -137,4 +157,29 @@ def service_to_dict(row):
         "duration_minutes": row["duration_minutes"],
         "price_htg": row["price_htg"],
         "is_active": bool(row["is_active"]),
-      }
+    }
+
+
+SETTINGS_KEYS = ("phone", "address", "doctor_name", "appointment_hours", "logo_image", "hero_image")
+
+
+def get_settings():
+    conn = get_db()
+    rows = conn.execute("SELECT key, value FROM settings").fetchall()
+    conn.close()
+    values = {r["key"]: r["value"] for r in rows}
+    return {k: values.get(k, "") for k in SETTINGS_KEYS}
+
+
+def update_settings(updates):
+    """updates: dict of {key: value}. Only known keys are written."""
+    conn = get_db()
+    for key, value in updates.items():
+        if key in SETTINGS_KEYS:
+            conn.execute(
+                "INSERT INTO settings (key, value) VALUES (?, ?) "
+                "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                (key, value),
+            )
+    conn.commit()
+    conn.close()
