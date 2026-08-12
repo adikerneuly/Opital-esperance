@@ -1,0 +1,32 @@
+# Blueprint Render — déploiement en un clic.
+# Sur render.com : New > Blueprint > connectez ce dépôt GitHub, Render lira ce fichier automatiquement.
+#
+# IMPORTANT (persistance des données) :
+# Sur le plan gratuit ("free"), le disque n'est PAS garanti persistant :
+# hopital.db et les images uploadées peuvent être réinitialisés à chaque
+# redéploiement. Pour une vraie persistance, décommentez la section "disk"
+# ci-dessous et passez le plan à "starter" (payant, quelques $/mois) —
+# voir la section correspondante dans le README.
+
+services:
+  - type: web
+    name: hopital-esperance
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python seed_admin.py"
+    startCommand: "gunicorn -w 2 -b 0.0.0.0:$PORT app:app"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_PATH
+        value: hopital.db
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false   # à saisir vous-même dans le dashboard Render (jamais commité)
+    # disk:
+    #   name: hopital-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # -> si activé, mettez aussi DATABASE_PATH=/var/data/hopital.db
+    #    et changez UPLOAD_FOLDER dans app.py vers /var/data/uploads
