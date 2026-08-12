@@ -6,10 +6,10 @@ from functools import wraps
 
 from dotenv import load_dotenv
 from flask import Flask, request, session, jsonify, send_from_directory, g
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
-from database import get_db, init_db, service_to_dict
+from database import get_db, init_db, service_to_dict, get_settings, update_settings
 
 load_dotenv()
 
@@ -99,6 +99,11 @@ def uploaded_file(filename):
 # ---------------------------------------------------------------------------
 # API publique
 # ---------------------------------------------------------------------------
+@app.route("/api/settings")
+def api_settings():
+    return jsonify(get_settings())
+
+
 @app.route("/api/services")
 def api_services():
     want_all = request.args.get("all") == "1"
@@ -335,6 +340,69 @@ def api_admin_message_delete(msg_id):
     db.commit()
     db.close()
     return jsonify({"ok": True})
+
+
+# ---------------------------------------------------------------------------
+# API Admin — paramètres du site (protégée)
+# ---------------------------------------------------------------------------
+@app.route("/api/admin/settings", methods=["PUT"])
+@login_required
+def api_admin_settings_update():
+    f = request.form
+    updates = {
+        "phone": f.get("phone", ""),
+        "address": f.get("address", ""),
+        "doctor_name": f.get("doctor_name", ""),
+        "appointment_hours": f.get("appointment_hours", ""),
+    }
+
+    logo_path = save_uploaded_image(request.files.get("logo_image"))
+    if logo_path:
+        updates["logo_image"] = logo_path
+
+    hero_path = save_uploaded_image(request.files.get("hero_image"))
+    if hero_path:
+        updates["hero_image"] = hero_path
+
+    update_settings(updates)
+    return jsonify(get_settings())
+
+
+# ---------------------------------------------------------------------------
+# API Admin — modifier le compte admin (nom d'utilisateur / mot de passe)
+# Le mot de passe actuel doit être fourni et vérifié avant tout changement.
+# ---------------------------------------------------------------------------
+@app.route("/api/admin/account", methods=["PUT"])
+@login_required
+def api_admin_account_update():
+    data = request.get_json(force=True, silent=True) or {}
+    current_password = data.get("current_password") or ""
+    new_username = (data.get("new_username") or "").strip()
+    new_password = data.get("new_password") or ""
+
+    db = get_db()
+    user = db.execute("SELECT * FROM admin_users WHERE id=?", (session["admin_id"],)).fetchone()
+
+    if not user or not check_password_hash(user["password_hash"], current_password):
+        db.close()
+        return jsonify({"error": "invalid_current_password"}), 401
+
+    final_username = new_username or user["username"]
+    final_password_hash = generate_password_hash(new_password) if new_password else user["password_hash"]
+
+    try:
+        db.execute(
+            "UPDATE admin_users SET username=?, password_hash=? WHERE id=?",
+            (final_username, final_password_hash, user["id"]),
+        )
+        db.commit()
+    except Exception:
+        db.close()
+        return jsonify({"error": "username_taken"}), 409
+
+    db.close()
+    session["admin_username"] = final_username
+    return jsonify({"ok": True, "username": final_username})
 
 
 if __name__ == "__main__":
